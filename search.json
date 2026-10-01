@@ -1,0 +1,65 @@
+[
+  {
+    "objectID": "tutorial-dashboard-quarto.html",
+    "href": "tutorial-dashboard-quarto.html",
+    "title": "Tutorial: crear un dashboard en R con Quarto (RStudio)",
+    "section": "",
+    "text": "Este tutorial está pensado para que lo sigan paso a paso dentro de RStudio y terminen con un dashboard interactivo funcionando en el navegador.\n\n\n\nQuarto permite convertir un documento .qmd (que mezcla texto, código R y resultados) en un dashboard: una página web con tarjetas (cards), gráficos, tablas y “value boxes”, organizada en filas y columnas. No requiere Shiny ni un servidor: el resultado es un archivo HTML que se puede abrir en cualquier navegador o publicar en internet.\n\n\n\n\nR instalado (versión 4.x recomendada).\nRStudio (versión 2023.09 “Desktop Marbled Salamander” o posterior; ya incluye Quarto integrado — no hace falta instalarlo aparte).\nVerificar que Quarto está disponible: en la consola de RStudio ejecutar:\nquarto::quarto_version()\nSi el paquete quarto no está instalado:\ninstall.packages(\"quarto\")\nPaquetes de R que usaremos en el ejemplo:\ninstall.packages(c(\"palmerpenguins\", \"dplyr\", \"ggplot2\", \"plotly\", \"DT\", \"bslib\"))\n\n\n\n\n\nEn RStudio: File → New File → Quarto Document…\nEn el cuadro de diálogo se puede elegir “Dashboard” directamente (en versiones recientes de RStudio aparece como plantilla), o simplemente crear un documento .qmd en blanco y pegar el YAML que se explica abajo.\nGuardar el archivo, por ejemplo, como mi_dashboard.qmd.\n\n\n\n\nTodo dashboard comienza con un encabezado YAML donde el format es dashboard:\n---\ntitle: \"Mi primer dashboard\"\nformat: dashboard\n---\nA partir de ahí, la estructura visual se define con títulos Markdown, no con código:\n\n## (nivel 2) crea filas o columnas (secciones principales).\n### (nivel 3, o los bloques de código en sí) crean tarjetas (cards) dentro de esas filas/columnas.\nEl atributo orientation: rows o orientation: columns en el YAML define si los ## se apilan como filas o columnas por defecto.\nSe puede fijar el tamaño con {height=30%} o {width=60%} junto al título.\n\n\n\n\n\n\n\n\n\n\nElemento\nCómo se hace\n\n\n\n\nCard con un gráfico\nUn bloque de código R con #| title: \"Nombre\"\n\n\nValue box (número destacado)\nBloque de código con #| content: valuebox\n\n\nTabla interactiva\nPaquete DT dentro de un bloque de código\n\n\nPestañas (tabset)\n## {.tabset}\n\n\nBarra lateral\n## {.sidebar}\n\n\nMúltiples páginas\nUsar # Nombre de página (nivel 1)\n\n\n\n\n\n\n\nVamos a construir un dashboard con el dataset palmerpenguins (mediciones de pingüinos), muy usado para enseñar.\nPaso 1 — YAML y configuración inicial\n---\ntitle: \"Pingüinos de Palmer\"\nformat:\n  dashboard:\n    orientation: columns\n    theme: cosmo\n---\nPaso 2 — Cargar datos (bloque de configuración, oculto)\n```{r}\n#| label: setup\n#| include: false\n\nlibrary(palmerpenguins)\nlibrary(dplyr)\nlibrary(ggplot2)\nlibrary(plotly)\nlibrary(DT)\n\ndatos &lt;- penguins |&gt; filter(!is.na(sex))\n```\nPaso 3 — Fila de value boxes con estadísticas clave\n## Row {height=20%}\n\n```{r}\n#| content: valuebox\n#| title: \"Total de pingüinos\"\nlist(icon = \"clipboard-data\", color = \"primary\", value = nrow(datos))\n```\n\n```{r}\n#| content: valuebox\n#| title: \"Especies\"\nlist(icon = \"bar-chart\", color = \"info\", value = length(unique(datos$species)))\n```\n\n```{r}\n#| content: valuebox\n#| title: \"Peso promedio (g)\"\nlist(icon = \"graph-up\", color = \"success\",\n     value = round(mean(datos$body_mass_g), 0))\n```\nPaso 4 — Fila con gráficos interactivos\n## Row {height=80%}\n\n### Column {width=60%}\n\n```{r}\n#| title: \"Largo vs profundidad del pico\"\np &lt;- ggplot(datos, aes(x = bill_length_mm, y = bill_depth_mm, color = species)) +\n  geom_point(size = 2, alpha = 0.7) +\n  labs(x = \"Largo del pico (mm)\", y = \"Profundidad del pico (mm)\") +\n  theme_minimal()\nggplotly(p)\n```\n\n### Column {width=40%}\n\n```{r}\n#| title: \"Cantidad por especie\"\nggplot(datos, aes(x = species, fill = species)) +\n  geom_bar() +\n  theme_minimal() +\n  theme(legend.position = \"none\")\n```\nPaso 5 (opcional) — Segunda página con una tabla\n# Datos\n\n```{r}\n#| title: \"Tabla completa\"\ndatatable(datos, options = list(pageLength = 10))\n```\n\nNota: al copiar estos bloques en RStudio, quita las llaves dobles {r} y déjalas como {r} (aquí se duplicaron solo para que se muestren como texto en este tutorial).\n\n\n\n\nEn RStudio, con el archivo .qmd abierto:\n\nHacer clic en el botón Render (arriba del editor), o\nEjecutar en la consola:\nquarto::quarto_render(\"mi_dashboard.qmd\")\n\nEsto genera un archivo mi_dashboard.html que se abre automáticamente en el visor de RStudio o en el navegador.\n\n\n\nUna vez que funciona localmente, se puede compartir de varias formas:\n\nQuarto Pub (gratis, un comando): quarto publish quarto-pub mi_dashboard.qmd\nGitHub Pages: subiendo el HTML generado a un repositorio.\nPosit Connect (si la institución tiene servidor propio).\n\n\n\n\n\nCambiar el dataset por uno propio (por ejemplo, un CSV cargado con read.csv()).\nAgregar una cuarta value box con otra estadística (por ejemplo, la isla con más avistamientos).\nConvertir uno de los gráficos estáticos en interactivo con ggplotly().\nAgregar una barra lateral (## {.sidebar}) con un texto explicativo del dataset.\nCrear una segunda página con una tabla filtrable usando DT::datatable()."
+  },
+  {
+    "objectID": "tutorial-dashboard-quarto.html#qué-es-un-dashboard-con-quarto",
+    "href": "tutorial-dashboard-quarto.html#qué-es-un-dashboard-con-quarto",
+    "title": "Tutorial: crear un dashboard en R con Quarto (RStudio)",
+    "section": "",
+    "text": "Quarto permite convertir un documento .qmd (que mezcla texto, código R y resultados) en un dashboard: una página web con tarjetas (cards), gráficos, tablas y “value boxes”, organizada en filas y columnas. No requiere Shiny ni un servidor: el resultado es un archivo HTML que se puede abrir en cualquier navegador o publicar en internet."
+  },
+  {
+    "objectID": "tutorial-dashboard-quarto.html#requisitos-previos",
+    "href": "tutorial-dashboard-quarto.html#requisitos-previos",
+    "title": "Tutorial: crear un dashboard en R con Quarto (RStudio)",
+    "section": "",
+    "text": "R instalado (versión 4.x recomendada).\nRStudio (versión 2023.09 “Desktop Marbled Salamander” o posterior; ya incluye Quarto integrado — no hace falta instalarlo aparte).\nVerificar que Quarto está disponible: en la consola de RStudio ejecutar:\nquarto::quarto_version()\nSi el paquete quarto no está instalado:\ninstall.packages(\"quarto\")\nPaquetes de R que usaremos en el ejemplo:\ninstall.packages(c(\"palmerpenguins\", \"dplyr\", \"ggplot2\", \"plotly\", \"DT\", \"bslib\"))"
+  },
+  {
+    "objectID": "tutorial-dashboard-quarto.html#crear-el-archivo-del-dashboard-en-rstudio",
+    "href": "tutorial-dashboard-quarto.html#crear-el-archivo-del-dashboard-en-rstudio",
+    "title": "Tutorial: crear un dashboard en R con Quarto (RStudio)",
+    "section": "",
+    "text": "En RStudio: File → New File → Quarto Document…\nEn el cuadro de diálogo se puede elegir “Dashboard” directamente (en versiones recientes de RStudio aparece como plantilla), o simplemente crear un documento .qmd en blanco y pegar el YAML que se explica abajo.\nGuardar el archivo, por ejemplo, como mi_dashboard.qmd."
+  },
+  {
+    "objectID": "tutorial-dashboard-quarto.html#estructura-básica-de-un-dashboard",
+    "href": "tutorial-dashboard-quarto.html#estructura-básica-de-un-dashboard",
+    "title": "Tutorial: crear un dashboard en R con Quarto (RStudio)",
+    "section": "",
+    "text": "Todo dashboard comienza con un encabezado YAML donde el format es dashboard:\n---\ntitle: \"Mi primer dashboard\"\nformat: dashboard\n---\nA partir de ahí, la estructura visual se define con títulos Markdown, no con código:\n\n## (nivel 2) crea filas o columnas (secciones principales).\n### (nivel 3, o los bloques de código en sí) crean tarjetas (cards) dentro de esas filas/columnas.\nEl atributo orientation: rows o orientation: columns en el YAML define si los ## se apilan como filas o columnas por defecto.\nSe puede fijar el tamaño con {height=30%} o {width=60%} junto al título.\n\n\n\n\n\n\n\n\n\n\nElemento\nCómo se hace\n\n\n\n\nCard con un gráfico\nUn bloque de código R con #| title: \"Nombre\"\n\n\nValue box (número destacado)\nBloque de código con #| content: valuebox\n\n\nTabla interactiva\nPaquete DT dentro de un bloque de código\n\n\nPestañas (tabset)\n## {.tabset}\n\n\nBarra lateral\n## {.sidebar}\n\n\nMúltiples páginas\nUsar # Nombre de página (nivel 1)"
+  },
+  {
+    "objectID": "tutorial-dashboard-quarto.html#ejemplo-paso-a-paso",
+    "href": "tutorial-dashboard-quarto.html#ejemplo-paso-a-paso",
+    "title": "Tutorial: crear un dashboard en R con Quarto (RStudio)",
+    "section": "",
+    "text": "Vamos a construir un dashboard con el dataset palmerpenguins (mediciones de pingüinos), muy usado para enseñar.\nPaso 1 — YAML y configuración inicial\n---\ntitle: \"Pingüinos de Palmer\"\nformat:\n  dashboard:\n    orientation: columns\n    theme: cosmo\n---\nPaso 2 — Cargar datos (bloque de configuración, oculto)\n```{r}\n#| label: setup\n#| include: false\n\nlibrary(palmerpenguins)\nlibrary(dplyr)\nlibrary(ggplot2)\nlibrary(plotly)\nlibrary(DT)\n\ndatos &lt;- penguins |&gt; filter(!is.na(sex))\n```\nPaso 3 — Fila de value boxes con estadísticas clave\n## Row {height=20%}\n\n```{r}\n#| content: valuebox\n#| title: \"Total de pingüinos\"\nlist(icon = \"clipboard-data\", color = \"primary\", value = nrow(datos))\n```\n\n```{r}\n#| content: valuebox\n#| title: \"Especies\"\nlist(icon = \"bar-chart\", color = \"info\", value = length(unique(datos$species)))\n```\n\n```{r}\n#| content: valuebox\n#| title: \"Peso promedio (g)\"\nlist(icon = \"graph-up\", color = \"success\",\n     value = round(mean(datos$body_mass_g), 0))\n```\nPaso 4 — Fila con gráficos interactivos\n## Row {height=80%}\n\n### Column {width=60%}\n\n```{r}\n#| title: \"Largo vs profundidad del pico\"\np &lt;- ggplot(datos, aes(x = bill_length_mm, y = bill_depth_mm, color = species)) +\n  geom_point(size = 2, alpha = 0.7) +\n  labs(x = \"Largo del pico (mm)\", y = \"Profundidad del pico (mm)\") +\n  theme_minimal()\nggplotly(p)\n```\n\n### Column {width=40%}\n\n```{r}\n#| title: \"Cantidad por especie\"\nggplot(datos, aes(x = species, fill = species)) +\n  geom_bar() +\n  theme_minimal() +\n  theme(legend.position = \"none\")\n```\nPaso 5 (opcional) — Segunda página con una tabla\n# Datos\n\n```{r}\n#| title: \"Tabla completa\"\ndatatable(datos, options = list(pageLength = 10))\n```\n\nNota: al copiar estos bloques en RStudio, quita las llaves dobles {r} y déjalas como {r} (aquí se duplicaron solo para que se muestren como texto en este tutorial)."
+  },
+  {
+    "objectID": "tutorial-dashboard-quarto.html#renderizar-el-dashboard",
+    "href": "tutorial-dashboard-quarto.html#renderizar-el-dashboard",
+    "title": "Tutorial: crear un dashboard en R con Quarto (RStudio)",
+    "section": "",
+    "text": "En RStudio, con el archivo .qmd abierto:\n\nHacer clic en el botón Render (arriba del editor), o\nEjecutar en la consola:\nquarto::quarto_render(\"mi_dashboard.qmd\")\n\nEsto genera un archivo mi_dashboard.html que se abre automáticamente en el visor de RStudio o en el navegador."
+  },
+  {
+    "objectID": "tutorial-dashboard-quarto.html#publicar-el-dashboard-opcional",
+    "href": "tutorial-dashboard-quarto.html#publicar-el-dashboard-opcional",
+    "title": "Tutorial: crear un dashboard en R con Quarto (RStudio)",
+    "section": "",
+    "text": "Una vez que funciona localmente, se puede compartir de varias formas:\n\nQuarto Pub (gratis, un comando): quarto publish quarto-pub mi_dashboard.qmd\nGitHub Pages: subiendo el HTML generado a un repositorio.\nPosit Connect (si la institución tiene servidor propio)."
+  },
+  {
+    "objectID": "tutorial-dashboard-quarto.html#ejercicios-sugeridos",
+    "href": "tutorial-dashboard-quarto.html#ejercicios-sugeridos",
+    "title": "Tutorial: crear un dashboard en R con Quarto (RStudio)",
+    "section": "",
+    "text": "Cambiar el dataset por uno propio (por ejemplo, un CSV cargado con read.csv()).\nAgregar una cuarta value box con otra estadística (por ejemplo, la isla con más avistamientos).\nConvertir uno de los gráficos estáticos en interactivo con ggplotly().\nAgregar una barra lateral (## {.sidebar}) con un texto explicativo del dataset.\nCrear una segunda página con una tabla filtrable usando DT::datatable()."
+  }
+]
